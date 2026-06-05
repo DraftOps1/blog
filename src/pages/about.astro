@@ -1,0 +1,48 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection, getEntry, render } from "astro:content";
+
+const about = await getEntry("about", "research");
+if (!about) {
+  throw new Error("Missing src/content/about/research.md");
+}
+
+const decisions = (await getCollection("adr")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const { Content } = await render(about);
+---
+
+<BaseLayout title="About">
+  <PageHeader
+    title={about.data.title}
+    tags={about.data.tags}
+    meta={[
+      ...(about.data.status ? [{ label: "status", value: about.data.status }] : []),
+      ...(about.data.scope ? [{ label: "scope", value: about.data.scope }] : []),
+    ]}
+  />
+
+  <div class="content-layout">
+    <article class="prose">
+      <Content />
+    </article>
+
+    <aside class="side-panel" aria-label="Related links">
+      <section>
+        <h2>Related ADRs</h2>
+        <ul>
+          {decisions.map((decision) => (
+            <li>
+              <SmartLink href={`/adr/${decision.id}/`}>
+                {decision.data.decisionId}: {decision.data.title}
+              </SmartLink>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </aside>
+  </div>
+</BaseLayout>

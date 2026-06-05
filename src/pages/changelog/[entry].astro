@@ -1,0 +1,65 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import ArticleFeedback from "@components/ArticleFeedback.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const changelog = await getCollection("changelog");
+  return changelog.map((entry) => ({
+    params: { entry: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={`${entry.data.week}: ${entry.data.title}`}>
+  <PageHeader
+    kicker="changelog"
+    title={`${entry.data.week}: ${entry.data.title}`}
+    tags={entry.data.tags}
+    meta={[
+      { label: "date", value: entry.data.date.toISOString().slice(0, 10) },
+      { label: "focus", value: entry.data.focus },
+      { label: "status", value: entry.data.status },
+    ]}
+  />
+
+  <div class="content-layout">
+    <article class="prose">
+      <Content />
+    </article>
+
+    <aside class="side-panel" aria-label="Related links">
+      <section>
+        <h2>Tags</h2>
+        <ul>
+          {entry.data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      </section>
+      {entry.data.next && (
+        <section>
+          <h2>Next</h2>
+          <p>{entry.data.next}</p>
+        </section>
+      )}
+      <section>
+        <h2>Continue</h2>
+        <ul>
+          <li><SmartLink href="/about/">About this research</SmartLink></li>
+          <li><SmartLink href="/notes/">Note</SmartLink></li>
+          <li><SmartLink href="/adr/">ADR / RFD</SmartLink></li>
+        </ul>
+      </section>
+      <ArticleFeedback
+        section="Changelog"
+        title={`${entry.data.week}: ${entry.data.title}`}
+        sourcePath={`src/content/changelog/${entry.id}.md`}
+      />
+    </aside>
+  </div>
+</BaseLayout>

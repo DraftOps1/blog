@@ -1,0 +1,32 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const changelog = (await getCollection("changelog")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<BaseLayout title="Changelog">
+  <PageHeader
+    title="Changelog"
+  />
+
+  <div class="changelog-list">
+    {
+      changelog.map((entry) => (
+        <article class="changelog-row">
+          <div class="row-meta">{entry.data.week}<br />{entry.data.date.toISOString().slice(0, 10)}</div>
+          <div>
+            <h2 class="row-title"><SmartLink href={`/changelog/${entry.id}/`}>{entry.data.title}</SmartLink></h2>
+          </div>
+          <div class="row-aside">
+            {entry.data.focus}
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</BaseLayout>

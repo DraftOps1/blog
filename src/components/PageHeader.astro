@@ -1,0 +1,38 @@
+---
+interface Props {
+  title: string;
+  summary?: string;
+  kicker?: string;
+  tags?: string[];
+  meta?: { label: string; value: string }[];
+}
+
+const { title, summary, kicker, tags = [], meta = [] } = Astro.props;
+---
+
+<header class="page-header">
+  {kicker && <p class="kicker">{kicker}</p>}
+  <h1>{title}</h1>
+  {summary && <p class="lead">{summary}</p>}
+  {
+    tags.length > 0 && (
+      <ul class="tag-list" aria-label="keywords">
+        {tags.map((tag) => (
+          <li>{tag}</li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    meta.length > 0 && (
+      <dl class="frontmatter">
+        {meta.map((item) => (
+          <>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+          </>
+        ))}
+      </dl>
+    )
+  }
+</header>

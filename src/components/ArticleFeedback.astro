@@ -1,0 +1,32 @@
+---
+interface Props {
+  section: string;
+  title: string;
+  sourcePath: string;
+}
+
+const { section, title, sourcePath } = Astro.props;
+const repositoryUrl = "https://github.com/DraftOps1/blog";
+const issueTitle = `[${section}] ${title}`;
+const issueBody = [
+  "## 記事",
+  `- 種類: ${section}`,
+  `- タイトル: ${title}`,
+  `- URL: ${Astro.url.pathname}`,
+  `- Markdown: \`${sourcePath}\``,
+  "",
+  "## コメント",
+  "",
+].join("\n");
+const issueUrl = `${repositoryUrl}/issues/new?${new URLSearchParams({
+  title: issueTitle,
+  labels: "feedback",
+  body: issueBody,
+})}`;
+---
+
+<section>
+  <h2>Feedback</h2>
+  <p>記事名とURLを入れた Issue を作れます。ご感想などいただけると非常に嬉しいです。</p>
+  <a class="button" href={issueUrl} target="_blank" rel="noreferrer">Issue</a>
+</section>

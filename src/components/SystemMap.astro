@@ -1,0 +1,32 @@
+---
+const signals = ["logs", "metrics", "traces", "profiles"];
+---
+
+<figure class="system-map" aria-label="Cross-signal observability system map">
+  <figcaption>signal path</figcaption>
+  <div class="map-grid">
+    <div class="map-node app">
+      <span>workload</span>
+      <strong>Misskey</strong>
+      <small>PostgreSQL / Redis</small>
+    </div>
+    <div class="map-node collect">
+      <span>collect</span>
+      <strong>OTel</strong>
+      <small>node + cluster</small>
+    </div>
+    <div class="map-node store">
+      <span>store</span>
+      <strong>Backends</strong>
+      <small>Loki / Tempo / Prometheus / Pyroscope</small>
+    </div>
+    <div class="map-node infer">
+      <span>evaluate</span>
+      <strong>RCA</strong>
+      <small>evidence bundle + Local LLM</small>
+    </div>
+  </div>
+  <ul class="signal-rails">
+    {signals.map((signal) => <li>{signal}</li>)}
+  </ul>
+</figure>

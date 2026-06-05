@@ -1,0 +1,57 @@
+---
+import SmartLink from "@components/SmartLink.astro";
+import { site } from "@data/site";
+import "@styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  bodyClass?: string;
+}
+
+const {
+  title = site.title,
+  description = site.description,
+  bodyClass = "",
+} = Astro.props;
+const pageTitle = title === site.title ? site.title : `${title} | ${site.title}`;
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/changelog/", label: "Changelog" },
+  { href: "/notes/", label: "Note" },
+  { href: "/adr/", label: "ADR" },
+  { href: "/about/", label: "About" },
+];
+const baseUrl = import.meta.env.BASE_URL;
+const assetPath = (path: string) => {
+  const cleanBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  return `${cleanBase}${path.replace(/^\/+/, "")}`;
+};
+const canonical = new URL(Astro.url.pathname, Astro.url).toString();
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#fefefe" />
+    <link rel="icon" href={assetPath("favicon.svg")} />
+    <link rel="canonical" href={canonical} />
+    <title>{pageTitle}</title>
+  </head>
+  <body class={bodyClass}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="site-shell">
+      <header class="site-header">
+        <nav class="site-nav" aria-label="Primary navigation">
+          {navItems.map((item) => <SmartLink href={item.href}>{item.label}</SmartLink>)}
+        </nav>
+      </header>
+      <main id="main">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

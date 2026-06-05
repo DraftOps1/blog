@@ -1,0 +1,33 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const decisions = (await getCollection("adr")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<BaseLayout title="ADR / RFD">
+  <PageHeader
+    title="ADR / RFD"
+  />
+
+  <div class="decision-list">
+    {
+      decisions.map((decision) => (
+        <article class="decision-row">
+          <div class="row-meta">{decision.data.decisionId}<br />{decision.data.date.toISOString().slice(0, 10)}</div>
+          <div>
+            <h2 class="row-title"><SmartLink href={`/adr/${decision.id}/`}>{decision.data.title}</SmartLink></h2>
+          </div>
+          <div class="row-aside">
+            <span class={`status ${decision.data.status}`}>{decision.data.status}</span><br />
+            {decision.data.area}
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</BaseLayout>

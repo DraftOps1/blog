@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# Local agent/tooling state.
+.agents/
+.codex/
+
+# Local secrets and machine-specific config.
+.env
+.env.*
+*.local
+.npmrc
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Generated logs and reports.
+*.log
+coverage/

@@ -1,0 +1,29 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const notes = (await getCollection("notes")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<BaseLayout title="Note">
+  <PageHeader
+    title="Note"
+  />
+
+  <div class="note-list">
+    {
+      notes.map((note) => (
+        <article class="note-row">
+          <div class="row-meta">{note.data.date.toISOString().slice(0, 10)}<br />{note.data.tags.join(", ")}</div>
+          <div>
+            <h2 class="row-title"><SmartLink href={`/notes/${note.id}/`}>{note.data.title}</SmartLink></h2>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</BaseLayout>

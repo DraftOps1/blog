@@ -1,0 +1,57 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import ArticleFeedback from "@components/ArticleFeedback.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes");
+  return notes.map((note) => ({
+    params: { note: note.id },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<BaseLayout title={note.data.title}>
+  <PageHeader
+    kicker="note"
+    title={note.data.title}
+    tags={note.data.tags}
+    meta={[
+      { label: "date", value: note.data.date.toISOString().slice(0, 10) },
+    ]}
+  />
+
+  <div class="content-layout">
+    <article class="prose">
+      <Content />
+    </article>
+
+    <aside class="side-panel" aria-label="Related links">
+      <section>
+        <h2>Tags</h2>
+        <ul>
+          {note.data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      </section>
+      <section>
+        <h2>Continue</h2>
+        <ul>
+          <li><SmartLink href="/notes/">Note index</SmartLink></li>
+          <li><SmartLink href="/changelog/">Changelog</SmartLink></li>
+          <li><SmartLink href="/about/">About this research</SmartLink></li>
+        </ul>
+      </section>
+      <ArticleFeedback
+        section="Note"
+        title={note.data.title}
+        sourcePath={`src/content/notes/${note.id}.md`}
+      />
+    </aside>
+  </div>
+</BaseLayout>

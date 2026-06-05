@@ -1,0 +1,53 @@
+---
+import PageHeader from "@components/PageHeader.astro";
+import ArticleFeedback from "@components/ArticleFeedback.astro";
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const decisions = await getCollection("adr");
+  return decisions.map((decision) => ({
+    params: { id: decision.id },
+    props: { decision },
+  }));
+}
+
+const { decision } = Astro.props;
+const { Content } = await render(decision);
+---
+
+<BaseLayout title={`${decision.data.decisionId}: ${decision.data.title}`}>
+  <PageHeader
+    kicker="architecture decision record"
+    title={`${decision.data.decisionId}: ${decision.data.title}`}
+    tags={decision.data.tags}
+    meta={[
+      { label: "status", value: decision.data.status },
+      { label: "date", value: decision.data.date.toISOString().slice(0, 10) },
+      { label: "area", value: decision.data.area },
+    ]}
+  />
+
+  <div class="content-layout">
+    <article class="prose">
+      <Content />
+    </article>
+
+    <aside class="side-panel" aria-label="Decision context">
+      <section>
+        <h2>Continue</h2>
+        <ul>
+          <li><SmartLink href="/adr/">ADR index</SmartLink></li>
+          <li><SmartLink href="/about/">About this research</SmartLink></li>
+          <li><SmartLink href="/changelog/">Changelog</SmartLink></li>
+        </ul>
+      </section>
+      <ArticleFeedback
+        section="ADR"
+        title={`${decision.data.decisionId}: ${decision.data.title}`}
+        sourcePath={`src/content/adr/${decision.id}.md`}
+      />
+    </aside>
+  </div>
+</BaseLayout>

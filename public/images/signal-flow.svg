@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" role="img" aria-labelledby="title desc">
+  <title id="title">Signal flow</title>
+  <desc id="desc">Logs, metrics, traces, and profiles are collected into an evidence bundle.</desc>
+  <rect width="760" height="220" fill="#fefefe"/>
+  <g fill="#fbfaf7" stroke="#d1d5db">
+    <rect x="24" y="64" width="150" height="80" rx="6"/>
+    <rect x="220" y="64" width="150" height="80" rx="6"/>
+    <rect x="416" y="64" width="150" height="80" rx="6"/>
+    <rect x="612" y="64" width="124" height="80" rx="6"/>
+  </g>
+  <g fill="none" stroke="#6b7280" stroke-width="2">
+    <path d="M174 104h46"/>
+    <path d="M370 104h46"/>
+    <path d="M566 104h46"/>
+  </g>
+  <g fill="#3d3d3d" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">
+    <text x="48" y="96">workload</text>
+    <text x="48" y="120">Misskey</text>
+    <text x="244" y="96">signals</text>
+    <text x="244" y="120">logs metrics traces</text>
+    <text x="440" y="96">bundle</text>
+    <text x="440" y="120">incident evidence</text>
+    <text x="636" y="96">RCA</text>
+    <text x="636" y="120">evaluation</text>
+  </g>
+</svg>

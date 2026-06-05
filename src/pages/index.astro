@@ -1,0 +1,70 @@
+---
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const byDateDesc = (a, b) => b.data.date.valueOf() - a.data.date.valueOf();
+const changelog = (await getCollection("changelog")).sort(byDateDesc);
+const notes = (await getCollection("notes")).sort(byDateDesc);
+const decisions = (await getCollection("adr")).sort(byDateDesc);
+
+const categories = [
+  {
+    label: "Changelog",
+    href: "/changelog/",
+    count: changelog.length,
+    items: changelog.slice(0, 3).map((entry) => ({
+      href: `/changelog/${entry.id}/`,
+      title: `${entry.data.week}: ${entry.data.title}`,
+      meta: entry.data.focus,
+    })),
+  },
+  {
+    label: "Note",
+    href: "/notes/",
+    count: notes.length,
+    items: notes.slice(0, 3).map((note) => ({
+      href: `/notes/${note.id}/`,
+      title: note.data.title,
+      meta: note.data.tags.join(", "),
+    })),
+  },
+  {
+    label: "ADR / RFD",
+    href: "/adr/",
+    count: decisions.length,
+    items: decisions.slice(0, 3).map((decision) => ({
+      href: `/adr/${decision.id}/`,
+      title: `${decision.data.decisionId}: ${decision.data.title}`,
+      meta: `${decision.data.status} / ${decision.data.area}`,
+    })),
+  },
+];
+---
+
+<BaseLayout title="Home">
+  <section class="home-hero">
+    <h1>研究ログ</h1>
+  </section>
+
+  <section class="category-grid" aria-label="Article categories">
+    {
+      categories.map((category) => (
+        <article class="category-panel">
+          <div class="category-head">
+            <h2><SmartLink href={category.href}>{category.label}</SmartLink></h2>
+            <SmartLink href={category.href} class="category-archive">all ({category.count})</SmartLink>
+          </div>
+          <ol class="article-link-list">
+            {category.items.map((item) => (
+              <li>
+                <SmartLink href={item.href}>{item.title}</SmartLink>
+                <span>{item.meta}</span>
+              </li>
+            ))}
+          </ol>
+        </article>
+      ))
+    }
+  </section>
+</BaseLayout>
