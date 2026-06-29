@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-label="GPU node responsibility boundary">
+  <defs><style>.bg{fill:#0b1220}.txt{font-family:Inter,Arial,sans-serif;fill:#e5e7eb;font-size:24px}.small{font-size:17px;fill:#cbd5e1}.lane{fill:#111827;stroke:#334155;stroke-width:2;rx:12}.head{fill:#1e293b}.ok{fill:#052e1a;stroke:#22c55e;stroke-width:2}.warn{fill:#3b2507;stroke:#f59e0b;stroke-width:2}.box{fill:#0f172a;stroke:#64748b;stroke-width:1.5;rx:10}</style></defs>
+  <rect class="bg" width="1200" height="600"/>
+  <text x="50" y="55" class="txt" font-size="30">GPUノード追加時の責任境界</text>
+  <text x="50" y="86" class="small">GPUが見えない時に、どの層で止まっているかを分けて確認する。</text>
+  <g transform="translate(50,135)">
+    <rect class="lane" width="210" height="360"/><rect class="head" width="210" height="60"/><text x="55" y="38" class="txt">Hardware</text><rect class="box" x="25" y="105" width="160" height="70"/><text x="48" y="148" class="small">RTX 4070</text><rect class="box" x="25" y="205" width="160" height="70"/><text x="50" y="248" class="small">PCIe / PSU</text></g>
+  <g transform="translate(280,135)">
+    <rect class="lane" width="210" height="360"/><rect class="head" width="210" height="60"/><text x="65" y="38" class="txt">Host OS</text><rect class="box" x="25" y="105" width="160" height="70"/><text x="38" y="148" class="small">Ubuntu</text><rect class="box" x="25" y="205" width="160" height="70"/><text x="42" y="248" class="small">nvidia-smi</text></g>
+  <g transform="translate(510,135)">
+    <rect class="lane" width="210" height="360"/><rect class="head" width="210" height="60"/><text x="36" y="38" class="txt">Runtime</text><rect class="box" x="25" y="105" width="160" height="70"/><text x="44" y="148" class="small">containerd</text><rect class="box" x="25" y="205" width="160" height="70"/><text x="45" y="248" class="small">nvidia runtime</text></g>
+  <g transform="translate(740,135)">
+    <rect class="lane" width="210" height="360"/><rect class="head" width="210" height="60"/><text x="38" y="38" class="txt">Kubernetes</text><rect class="box" x="25" y="105" width="160" height="70"/><text x="36" y="148" class="small">RuntimeClass</text><rect class="box" x="25" y="205" width="160" height="70"/><text x="32" y="248" class="small">Device Plugin</text></g>
+  <g transform="translate(970,135)">
+    <rect class="lane" width="180" height="360"/><rect class="head" width="180" height="60"/><text x="45" y="38" class="txt">Workload</text><rect class="ok" x="20" y="105" width="140" height="70"/><text x="39" y="148" class="small">GPU Pod</text><rect class="warn" x="20" y="205" width="140" height="70"/><text x="36" y="238" class="small">resources:</text><text x="36" y="260" class="small">gpu=1</text></g>
+  <text x="60" y="555" class="small">今回の詰まり: HostではGPUが見えていたが、Device Plugin PodにはRuntimeClassの指定が必要だった。</text>
+</svg>

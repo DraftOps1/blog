@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-label="Longhorn storage before after">
+  <defs><style>.bg{fill:#0b1220}.txt{font-family:Inter,Arial,sans-serif;fill:#e5e7eb;font-size:24px}.small{font-size:18px;fill:#cbd5e1}.box{fill:#111827;stroke:#64748b;stroke-width:2;rx:14}.bad{stroke:#ef4444}.ok{stroke:#22c55e}.new{stroke:#38bdf8}.arrow{stroke:#94a3b8;stroke-width:3;marker-end:url(#arrow)}.disk{fill:#1e293b;stroke:#94a3b8;stroke-width:2;rx:10}.newdisk{fill:#0c4a6e;stroke:#38bdf8}</style><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+  <rect class="bg" width="1200" height="560"/>
+  <text x="50" y="55" class="txt" font-size="30">Longhorn disk追加の前後</text>
+  <text x="50" y="86" class="small">root disk依存を減らし、replica schedulingの余裕を作るために2TB SSDを追加した。</text>
+  <rect class="box bad" x="60" y="140" width="470" height="330"/>
+  <text x="90" y="180" class="txt">Before</text>
+  <text x="90" y="212" class="small">root disk中心。degraded volumeが残る。</text>
+  <rect class="disk" x="110" y="260" width="160" height="90"/><text x="140" y="302" class="txt">root disk</text><text x="130" y="330" class="small">/var/lib/longhorn</text>
+  <rect class="disk" x="320" y="260" width="160" height="90"/><text x="350" y="302" class="txt">replica</text><text x="350" y="330" class="small">余裕が少ない</text>
+  <text x="110" y="410" class="small">課題: 容量・再配置・root圧迫のリスクが残る</text>
+
+  <line class="arrow" x1="540" y1="305" x2="660" y2="305"/>
+  <text x="560" y="280" class="small">2TB SSD追加</text>
+
+  <rect class="box ok" x="670" y="140" width="470" height="330"/>
+  <text x="700" y="180" class="txt">After</text>
+  <text x="700" y="212" class="small">worker2に追加disk。degraded解消。</text>
+  <rect class="disk" x="720" y="260" width="160" height="90"/><text x="750" y="302" class="txt">root disk</text><text x="742" y="330" class="small">既存disk</text>
+  <rect class="disk newdisk" x="930" y="245" width="170" height="120"/><text x="956" y="292" class="txt">2TB SSD</text><text x="948" y="322" class="small">/mnt/longhorn-2tb</text><text x="966" y="346" class="small">replica先</text>
+  <text x="720" y="410" class="small">注意: USB SSDのため唯一の保管先にはしない</text>
+</svg>
