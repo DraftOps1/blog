@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <rect width="1400" height="760" fill="#111827"/>
+  <text x="60" y="70" fill="#f9fafb" font-size="34" font-family="sans-serif" font-weight="700">SLO v0 → metrics-only baseline → lock wait smoke test</text>
+  
+  <g font-family="sans-serif" font-size="24" fill="#e5e7eb">
+    <rect x="70" y="150" width="260" height="120" rx="18" fill="#1f2937" stroke="#60a5fa" stroke-width="3"/>
+    <text x="105" y="205">Private Misskey</text><text x="105" y="240" fill="#93c5fd">user=4 / note=0</text>
+    <rect x="410" y="150" width="300" height="120" rx="18" fill="#1f2937" stroke="#34d399" stroke-width="3"/>
+    <text x="445" y="200">Synthetic read-only</text><text x="445" y="235" fill="#86efac">success=100% / p95≈27ms</text>
+    <rect x="790" y="150" width="260" height="120" rx="18" fill="#1f2937" stroke="#fbbf24" stroke-width="3"/>
+    <text x="825" y="200">PostgreSQL signal</text><text x="825" y="235" fill="#fde68a">lock wait 0 → 1 → 0</text>
+    <rect x="1130" y="150" width="220" height="120" rx="18" fill="#1f2937" stroke="#f87171" stroke-width="3"/>
+    <text x="1165" y="200">RCA readout</text><text x="1165" y="235" fill="#fecaca">DB内部に限定</text>
+    <path d="M335 210 L400 210" stroke="#e5e7eb" stroke-width="4" marker-end="url(#a)"/>
+    <path d="M715 210 L780 210" stroke="#e5e7eb" stroke-width="4" marker-end="url(#a)"/>
+    <path d="M1055 210 L1120 210" stroke="#e5e7eb" stroke-width="4" marker-end="url(#a)"/>
+    <defs><marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#e5e7eb"/></marker></defs>
+    <text x="90" y="380" fill="#d1d5db">今回のポイントは、自然流量が少ない環境で先にSLO v0を固定し、</text>
+    <text x="90" y="425" fill="#d1d5db">DB内部のLock waitがread-only SLOに影響しているかどうかを分離したこと。</text>
+  </g>
+
+</svg>

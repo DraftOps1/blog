@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <rect width="1400" height="760" fill="#111827"/>
+  <text x="60" y="70" fill="#f9fafb" font-size="34" font-family="sans-serif" font-weight="700">PostgreSQL lock wait smoke test</text>
+  
+  <g font-family="sans-serif" font-size="23" fill="#e5e7eb">
+    <line x1="180" y1="150" x2="180" y2="620" stroke="#64748b" stroke-width="3"/>
+    <line x1="560" y1="150" x2="560" y2="620" stroke="#64748b" stroke-width="3"/>
+    <line x1="940" y1="150" x2="940" y2="620" stroke="#64748b" stroke-width="3"/>
+    <text x="90" y="125" fill="#93c5fd">holder</text><text x="470" y="125" fill="#fca5a5">blocked updater</text><text x="865" y="125" fill="#86efac">Prometheus/Grafana</text>
+    <rect x="115" y="180" width="130" height="60" rx="8" fill="#1e3a8a"/><text x="135" y="218">UPDATE</text>
+    <path d="M230 300 L540 300" stroke="#fca5a5" stroke-width="4" marker-end="url(#b)"/><text x="290" y="285" fill="#fca5a5">same row UPDATE</text>
+    <rect x="470" y="320" width="190" height="75" rx="8" fill="#7f1d1d"/><text x="490" y="350">wait_event_type</text><text x="510" y="382" fill="#fecaca">Lock / transactionid</text>
+    <path d="M650 360 L930 360" stroke="#fbbf24" stroke-width="4" marker-end="url(#b)"/><text x="705" y="345" fill="#fde68a">pg_rca_lock_wait_sessions = 1</text>
+    <rect x="830" y="390" width="260" height="80" rx="8" fill="#064e3b"/><text x="855" y="425">Dashboard detects</text><text x="855" y="455" fill="#bbf7d0">blocked sessions = 1</text>
+    <rect x="115" y="500" width="135" height="60" rx="8" fill="#312e81"/><text x="135" y="538">COMMIT</text>
+    <path d="M250 530 L540 530" stroke="#34d399" stroke-width="4" marker-end="url(#b)"/><text x="315" y="515" fill="#86efac">lock released</text>
+    <defs><marker id="b" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#e5e7eb"/></marker></defs>
+  </g>
+
+</svg>
