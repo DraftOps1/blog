@@ -1,0 +1,24 @@
+---
+import SmartLink from "@components/SmartLink.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const target = "/notes/2026-w27-postgres-lock-wait-prometheus/";
+---
+
+<BaseLayout
+  title="metrics-only RCA readout は後編に統合しました"
+  description="metrics-only RCA readout was consolidated into the PostgreSQL lock wait article."
+>
+  <section class="page-header">
+    <p class="kicker">note moved</p>
+    <h1>metrics-only RCA readout は後編に統合しました</h1>
+    <p class="lead">
+      重複していたreadout内容は、PostgreSQL lock waitの記事へ統合しました。
+    </p>
+    <p>
+      <SmartLink href={target}>
+        PostgreSQL lock waitをPrometheus/Grafanaで0→1→0として読む
+      </SmartLink>
+    </p>
+  </section>
+</BaseLayout>

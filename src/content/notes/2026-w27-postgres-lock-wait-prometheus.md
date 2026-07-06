@@ -1,5 +1,5 @@
 ---
-title: PostgreSQL lock waitをPrometheusとGrafanaで見えるようにした
+title: PostgreSQL lock waitをPrometheus/Grafanaで0→1→0として読む
 date: 2026-07-05
 tags:
   - kubernetes
@@ -10,15 +10,17 @@ tags:
   - rca
 ---
 
+この記事は、metrics-only RCA実験の後編です。前編では、Private Misskeyの自然流量が少ないため、read-only synthetic SLOと実験前ゲートを先に固定しました。
+
 前回のbaselineでは、PostgreSQLのblocking lockが通常時0であることは確認できました。ただし、その時点では `pg_stat_activity` を手動で見ていただけです。これではmetrics-only RCAとは言いづらい。
 
-今回は、安全なテストテーブルでPostgreSQL lock waitを再現し、それをPrometheusとGrafanaで見えるようにしました。これにより、手動SQLでしか見えなかったDB内部のLock waitが、RCA Metrics-only dashboard上に出るようになりました。
+今回は、安全なテストテーブルでPostgreSQL lock waitを再現し、それをPrometheusとGrafanaで `0 → 1 → 0` の状態遷移として見えるようにしました。これにより、手動SQLでしか見えなかったDB内部のLock waitを、read-only SLOと同じdashboard上で比較できるようになりました。
 
 ## 3行まとめ
 
 - 専用テーブル `rca_experiment.lock_test` でPostgreSQL lock waitを再現しました。
-- `wait_event_type=Lock`、`wait_event=transactionid`、`blocking_pids` を確認しました。
-- postgres_exporterのcustom queryで `pg_rca_lock_wait_sessions=1` をPrometheus/Grafanaに出せました。
+- postgres_exporterのcustom queryで、Lock waitをGrafana上の `0 → 1 → 0` として確認しました。
+- 今回の範囲では、DB内部signalは立った一方で、read-only synthetic SLOは崩れていません。
 
 ## いきなりMisskey本体は触らない
 
@@ -110,6 +112,25 @@ lock wait発生中。`blocked updater` が `holder transaction` を待ち、Lock
 
 ここで見たいのは、過去にスパイクが残っていることと、現在値が0に戻っていることです。つまり、DB内部ではLock waitを再現できたが、テスト後に残留ロックや残留セッションはありません。
 
+## read-only SLOは崩れていない
+
+今回のlock waitは、Misskey本体のテーブルではなく専用テーブルで起こしています。そのため、read-only pathには大きな影響は出ないはずです。ここは推測で終わらせず、RCA Metrics-only dashboard上のsynthetic panelsでも確認しました。
+
+![RCA Metrics-only dashboard synthetic panels](/images/2026-w27-metrics-only-rca/annotated/06-synthetic-slo-stable-during-db-work.png)
+
+smoke test中のread-only syntheticは、次の状態でした。
+
+| Signal | 観測値 | 解釈 |
+|---|---:|---|
+| PostgreSQL Lock Wait Sessions | 0 → 1 → 0 | DB内部でlock waitは発生し、解消した |
+| Synthetic Success Rate 15m | 100% | read-only pathの失敗は発生していない |
+| Synthetic p95 / p99 | 約27ms / 約33ms | smoke test中のlatency悪化は見えていない |
+| Platform health | Ready / Restart / PVCに崩れなし | platform全体の障害ではなさそう |
+
+この値は前編のbaseline値とは測定タイミングが違います。前編のp95 9.6ms / p99 10.5msは、fault injection前にLAN内から取得した初期baselineです。ここで見ている約27ms / 約33msは、smoke test中にdashboard上で見た15分窓の値です。
+
+ここから、今回の事象は「DB内部ではlock waitが発生したが、read-only synthetic SLOには影響していない」と切り分けられます。ただし、これはread-only pathに限定した判断です。Misskeyのwrite pathや実ユーザー影響まで確認できたわけではありません。
+
 ## 既知の問題
 
 postgres_exporter の標準collectorで `stat_replication` のエラーが出ています。
@@ -119,19 +140,43 @@ postgres_exporter の標準collectorで `stat_replication` のエラーが出て
 
 今回の `pg_rca_*` メトリクスは取れているため、実験は進められます。ただし、長時間実験に入る前にはログノイズを消す必要があります。
 
-## 今回の到達点
+## metrics-onlyで今回分かったこと
 
 今回の前後で、見えるものが変わりました。
 
 Before:
 
-- pg_stat_activityを手動で見ればLock waitが分かる
+- `pg_stat_activity` を手動で見ればLock waitが分かる
 - GrafanaだけではDB内部のLock waitが分からない
+- read-only SLOとDB内部signalを同じ画面で比較できない
 
 After:
 
 - Prometheusで `pg_rca_lock_wait_sessions` が見える
 - GrafanaでLock waitの発生と解消を見られる
+- `wait_event_type` / `wait_event` の種類まで追える
 - read-only SLOとDB内部signalを同じdashboardで比較できる
 
-これで、metrics-only RCA baselineの最初の穴は埋まりました。
+今回の範囲では、metrics-onlyだけで「DB内部のlock waitは発生したが、read-only pathのSLOは破っていない」と判断できました。これは完成したRCA基盤ではありませんが、metrics-only baselineの最初の穴は埋まりました。
+
+## まだ分からないこと
+
+一方で、まだ分からないこともあります。
+
+- MisskeyのPOST /notesに影響するlock waitは未検証
+- logsでどのエラーが出るかは未整理
+- tracesでどのspanが伸びるかは未整理
+- DB lock waitとアプリケーションlevelのqueue/backpressureの関係は未確認
+- LLMに渡すevidence bundleはまだ作っていない
+
+ここを曖昧にせず、次フェーズに分けます。
+
+## 次にやること
+
+次は2つの方向があります。
+
+1つ目は、exporterのログノイズを消すこと。postgres_exporterの `stat_replication` collectorがエラーを出しているので、長時間実験の前に片付けます。
+
+2つ目は、controlled write workloadです。read-only pathではなく、Misskeyの書き込みに近い経路を使って、実際にユーザー可視のSLOが悪化するかを見ます。
+
+ここから先は、metrics-onlyだけで進めるか、logs/tracesを足すかの比較に入れます。

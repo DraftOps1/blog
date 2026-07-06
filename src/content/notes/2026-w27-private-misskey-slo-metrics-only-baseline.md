@@ -11,6 +11,8 @@ tags:
   - grafana
 ---
 
+この記事は、metrics-only RCA実験の前編です。PostgreSQL lock waitを起こす前に、Private Misskeyで何を正常状態として扱うかを固定します。
+
 PostgreSQL lock wait の実験に入りたかったが、その前に一度止めました。Misskey は動いているものの、現状は private 運用で、ユーザーも投稿もほとんどありません。この状態で fault injection をしても、「何が遅くなったのか」「どのSLOを破ったのか」が曖昧になります。
 
 そこで今回は、障害を入れる前に SLO v0 と metrics-only baseline を固定しました。結論から言うと、現時点の Misskey は自然流量では研究負荷にならないため、read-only の synthetic traffic を先に定義する必要がありました。
@@ -104,8 +106,10 @@ PostgreSQL lock wait の実験に入りたかったが、その前に一度止�
 
 ただし、まだlogs/tracesは使っていません。これは意図的です。まずmetrics-onlyでどこまで判断できるかを見たいからです。
 
-## 次にやること
+## 後編へ
 
-次は PostgreSQL lock wait を安全なテストテーブルで再現します。いきなりMisskey本体のテーブルをロックするのではなく、専用テーブルで `wait_event_type=Lock` が出ることを確認します。
+次の記事では、PostgreSQL lock wait を安全なテストテーブルで再現します。いきなりMisskey本体のテーブルをロックするのではなく、専用テーブルで `wait_event_type=Lock` が出ることを確認します。
 
-その後、Prometheus/GrafanaにPostgreSQLのLock wait signalを載せます。
+その後、Prometheus/GrafanaにPostgreSQLのLock wait signalを載せ、metrics-onlyで `0 → 1 → 0` の状態遷移として読めるかを確認します。
+
+[PostgreSQL lock waitをPrometheus/Grafanaで0→1→0として読む](/notes/2026-w27-postgres-lock-wait-prometheus/)
