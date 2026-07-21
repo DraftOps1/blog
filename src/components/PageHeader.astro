@@ -8,11 +8,14 @@ interface Props {
 }
 
 const { title, summary, kicker, tags = [], meta = [] } = Astro.props;
+const titleParts = title.match(/^(.*?)(（[^（）]+）)$/u);
+const titleMain = titleParts?.[1] ?? title;
+const titleSuffix = titleParts?.[2];
 ---
 
 <header class="page-header">
   {kicker && <p class="kicker">{kicker}</p>}
-  <h1>{title}</h1>
+  <h1>{titleMain}{titleSuffix && <><wbr /><span class="title-suffix">{titleSuffix}</span></>}</h1>
   {summary && <p class="lead">{summary}</p>}
   {
     tags.length > 0 && (
@@ -36,3 +39,9 @@ const { title, summary, kicker, tags = [], meta = [] } = Astro.props;
     )
   }
 </header>
+
+<style>
+  .title-suffix {
+    white-space: nowrap;
+  }
+</style>

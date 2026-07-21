@@ -1,7 +1,9 @@
 ---
 import PageHeader from "@components/PageHeader.astro";
 import ArticleFeedback from "@components/ArticleFeedback.astro";
+import AnnotatedSlideDeck from "@components/AnnotatedSlideDeck.astro";
 import SmartLink from "@components/SmartLink.astro";
+import { physicalThermalSlides } from "@data/physicalThermalPresentation";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection, render } from "astro:content";
 
@@ -15,6 +17,8 @@ export async function getStaticPaths() {
 
 const { note } = Astro.props;
 const { Content } = await render(note);
+const hasPhysicalThermalPresentation =
+  note.id === "2026-w29-physical-thermal-observability";
 ---
 
 <BaseLayout title={note.data.title}>
@@ -26,6 +30,16 @@ const { Content } = await render(note);
       { label: "date", value: note.data.date.toISOString().slice(0, 10) },
     ]}
   />
+
+  {
+    hasPhysicalThermalPresentation && (
+      <AnnotatedSlideDeck
+        slides={physicalThermalSlides}
+        title="発表スライドと口頭説明"
+        description="まず22枚の発表資料を、各ページで話した内容と一緒に読めます。その後に、スライドを見なくても理解できる詳細記事が続きます。"
+      />
+    )
+  }
 
   <div class="content-layout">
     <article class="prose">
