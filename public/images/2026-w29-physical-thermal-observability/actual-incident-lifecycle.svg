@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620">
+<style>
+text{font-family:"Noto Sans CJK JP","Yu Gothic",sans-serif;fill:#17324d}
+.title{font-size:30px;font-weight:700}
+.sub{font-size:16px;fill:#546e7a}
+.label{font-size:17px;font-weight:700}
+.small{font-size:14px;fill:#455a64}
+.kpi{font-size:23px;font-weight:700}
+</style>
+<rect width="1400" height="620" fill="#f7fafc"/>
+<text x="45" y="55" class="title">ACTUAL thermal incident: Metrics → Alert → Logs / Trace</text>
+<text x="45" y="85" class="sub">最終runの相対時間。温度・CPU・Alert状態は実測、traceは実測イベントをOTLPへ構造化。</text>
+<line x1="120" y1="300" x2="1315" y2="300" stroke="#78909c" stroke-width="4"/>
+<line x1="120" y1="290" x2="120" y2="310" stroke="#78909c" stroke-width="3"/><text x="120" y="335" text-anchor="middle" class="small">T+0s</text>
+<line x1="277.7" y1="290" x2="277.7" y2="310" stroke="#78909c" stroke-width="3"/><text x="277.7" y="335" text-anchor="middle" class="small">T+19s</text>
+<line x1="385.6" y1="290" x2="385.6" y2="310" stroke="#78909c" stroke-width="3"/><text x="385.6" y="335" text-anchor="middle" class="small">T+32s</text>
+<line x1="568.1" y1="290" x2="568.1" y2="310" stroke="#78909c" stroke-width="3"/><text x="568.1" y="335" text-anchor="middle" class="small">T+54s</text>
+<line x1="609.6" y1="290" x2="609.6" y2="310" stroke="#78909c" stroke-width="3"/><text x="609.6" y="335" text-anchor="middle" class="small">T+59s</text>
+<line x1="1315" y1="290" x2="1315" y2="310" stroke="#78909c" stroke-width="3"/><text x="1315" y="335" text-anchor="middle" class="small">T+144s</text>
+<text x="45" y="155" class="label">CPU</text>
+<polyline points="120,210 278,210 278,125 568,125 568,210 1315,210" fill="none" stroke="#f9a825" stroke-width="8" stroke-linejoin="round"/>
+<text x="345" y="112" class="kpi" fill="#ef6c00">約100%</text>
+<text x="610" y="205" class="small">負荷停止後 約1.4%</text>
+<text x="45" y="395" class="label">SoC温度</text>
+<polyline points="120,470 278,460 436,380 543,345 568,320 610,415 1315,500" fill="none" stroke="#2e7d32" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="278" cy="460" r="7" fill="#2e7d32"/>
+<circle cx="436" cy="380" r="7" fill="#ef6c00"/>
+<circle cx="543" cy="345" r="7" fill="#c62828"/>
+<circle cx="568" cy="320" r="9" fill="#c62828"/>
+<circle cx="610" cy="415" r="7" fill="#1565c0"/>
+<circle cx="1315" cy="500" r="7" fill="#2e7d32"/>
+<text x="105" y="505" class="small">46.2℃</text>
+<text x="395" y="370" class="small">65℃超過</text>
+<text x="500" y="332" class="small">Firing時 69.1℃</text>
+<text x="545" y="300" class="kpi" fill="#c62828">72.5℃ 安全停止</text>
+<text x="620" y="440" class="small">CPU低下後も 61.3℃</text>
+<text x="1250" y="525" class="small">52.1℃</text>
+<text x="45" y="565" class="label">Alert</text>
+<rect x="120" y="535" width="316" height="34" rx="6" fill="#c8e6c9"/>
+<rect x="436" y="535" width="107" height="34" rx="6" fill="#fff59d"/>
+<rect x="543" y="535" width="67" height="34" rx="6" fill="#ef9a9a"/>
+<rect x="610" y="535" width="705" height="34" rx="6" fill="#c8e6c9"/>
+<text x="278" y="558" text-anchor="middle" class="small">inactive</text>
+<text x="489" y="558" text-anchor="middle" class="small">pending</text>
+<text x="576" y="558" text-anchor="middle" class="small">firing</text>
+<text x="960" y="558" text-anchor="middle" class="small">resolved / inactive</text>
+<line x1="278" y1="235" x2="278" y2="455" stroke="#90a4ae" stroke-dasharray="5 5"/>
+<line x1="436" y1="235" x2="436" y2="535" stroke="#ef6c00" stroke-dasharray="5 5"/>
+<line x1="543" y1="235" x2="543" y2="535" stroke="#c62828" stroke-dasharray="5 5"/>
+<line x1="568" y1="235" x2="568" y2="535" stroke="#c62828" stroke-dasharray="5 5"/>
+<line x1="610" y1="235" x2="610" y2="535" stroke="#1565c0" stroke-dasharray="5 5"/>
+<text x="278" y="255" text-anchor="middle" class="small">load開始</text>
+<text x="436" y="275" text-anchor="middle" class="small">閾値 / pending</text>
+<text x="543" y="255" text-anchor="middle" class="small">firing</text>
+<text x="568" y="275" text-anchor="middle" class="small">安全停止</text>
+<text x="610" y="255" text-anchor="middle" class="small">resolved</text>
+</svg>

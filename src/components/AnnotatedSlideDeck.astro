@@ -1,0 +1,608 @@
+---
+import type { AnnotatedSlide } from "@data/physicalThermalPresentation";
+
+interface Props {
+  slides: AnnotatedSlide[];
+  title: string;
+  description: string;
+}
+
+const { slides, title, description } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+const assetPath = (path: string): string => {
+  const cleanBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  return `${cleanBase}${path.replace(/^\/+/, "")}`;
+};
+---
+
+<section
+  class="annotated-deck"
+  data-annotated-deck
+  aria-labelledby="slide-deck-title"
+>
+  <header class="deck-header">
+    <div>
+      <p class="deck-eyebrow">presentation / {slides.length} slides</p>
+      <h2 id="slide-deck-title">{title}</h2>
+      <p>{description}</p>
+    </div>
+    <p class="deck-draft-note">
+      発表時に話した内容と実験記録をもとに再構成した、口頭説明の下書きです。
+    </p>
+  </header>
+
+  <div class="deck-stage" data-deck-stage>
+    <div class="deck-visual-column">
+      <div
+        class="deck-viewport"
+        data-deck-viewport
+        tabindex="0"
+        aria-label="発表スライド。左右矢印キーでも移動できます"
+      >
+        {
+          slides.map((slide, index) => (
+            <figure
+              id={`deck-slide-${slide.number}`}
+              class="deck-slide"
+              data-deck-slide
+              hidden={index !== 0}
+              aria-label={`スライド ${slide.number}: ${slide.title}`}
+            >
+              {slide.video ? (
+                <video
+                  data-deck-video
+                  controls
+                  playsinline
+                  preload="metadata"
+                  poster={assetPath(slide.image)}
+                  aria-label={slide.video.label}
+                >
+                  <source
+                    src={assetPath(slide.video.src)}
+                    type={slide.video.type}
+                  />
+                  <a href={assetPath(slide.video.src)}>LGTMデモ動画を開く</a>
+                </video>
+              ) : (
+                <img
+                  src={assetPath(slide.image)}
+                  alt={slide.alt}
+                  width="1600"
+                  height="900"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                />
+              )}
+            </figure>
+          ))
+        }
+      </div>
+
+      <div class="deck-controls" aria-label="スライド操作">
+        <button
+          type="button"
+          data-deck-previous
+          disabled
+          aria-label="前のスライド"
+        >
+          ← 前へ
+        </button>
+        <output data-deck-counter aria-live="polite">1 / {slides.length}</output
+        >
+        <button type="button" data-deck-next aria-label="次のスライド">
+          次へ →
+        </button>
+        <button type="button" data-deck-fullscreen class="fullscreen-button">
+          全画面
+        </button>
+      </div>
+    </div>
+
+    <div class="deck-notes" aria-live="polite">
+      {
+        slides.map((slide, index) => (
+          <article class="deck-note" data-deck-note hidden={index !== 0}>
+            <div class="deck-note-meta">
+              <span>slide {String(slide.number).padStart(2, "0")}</span>
+              <span class:list={["deck-kind", `kind-${slide.kind}`]}>
+                {slide.kind}
+              </span>
+            </div>
+            <h3>{slide.title}</h3>
+            <div class="deck-note-script">
+              {slide.talk.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+            </div>
+            <div class="deck-note-links">
+              {slide.video && (
+                <a
+                  href={assetPath(slide.video.src)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  デモ動画を別タブで開く
+                </a>
+              )}
+              <a href={assetPath(slide.image)} target="_blank" rel="noreferrer">
+                スライド画像を原寸で開く
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+
+  <nav class="deck-thumbnails" aria-label="スライド一覧">
+    {
+      slides.map((slide, index) => (
+        <button
+          type="button"
+          class="deck-thumbnail"
+          data-deck-target={index}
+          aria-controls={`deck-slide-${slide.number}`}
+          aria-label={`スライド ${slide.number}を表示: ${slide.title}`}
+          aria-current={index === 0 ? "true" : undefined}
+        >
+          <img
+            src={assetPath(slide.image)}
+            alt=""
+            width="160"
+            height="90"
+            loading="lazy"
+            decoding="async"
+          />
+          <span>{String(slide.number).padStart(2, "0")}</span>
+        </button>
+      ))
+    }
+  </nav>
+</section>
+
+<script>
+  const initializeDeck = (deck: HTMLElement): void => {
+    const slides = Array.from(
+      deck.querySelectorAll<HTMLElement>("[data-deck-slide]"),
+    );
+    const notes = Array.from(
+      deck.querySelectorAll<HTMLElement>("[data-deck-note]"),
+    );
+    const thumbnails = Array.from(
+      deck.querySelectorAll<HTMLButtonElement>("[data-deck-target]"),
+    );
+    const videos = Array.from(
+      deck.querySelectorAll<HTMLVideoElement>("[data-deck-video]"),
+    );
+    const previousButton = deck.querySelector<HTMLButtonElement>(
+      "[data-deck-previous]",
+    );
+    const nextButton =
+      deck.querySelector<HTMLButtonElement>("[data-deck-next]");
+    const fullscreenButton = deck.querySelector<HTMLButtonElement>(
+      "[data-deck-fullscreen]",
+    );
+    const counter = deck.querySelector<HTMLOutputElement>(
+      "[data-deck-counter]",
+    );
+    const viewport = deck.querySelector<HTMLElement>("[data-deck-viewport]");
+    const stage = deck.querySelector<HTMLElement>("[data-deck-stage]");
+
+    if (
+      slides.length === 0 ||
+      slides.length !== notes.length ||
+      !previousButton ||
+      !nextButton ||
+      !counter ||
+      !viewport
+    ) {
+      return;
+    }
+
+    let currentIndex = 0;
+    let touchStartX: number | null = null;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    const showSlide = (requestedIndex: number): void => {
+      const nextIndex = Math.min(
+        Math.max(requestedIndex, 0),
+        slides.length - 1,
+      );
+      currentIndex = nextIndex;
+
+      slides.forEach((slide, index) => {
+        slide.hidden = index !== currentIndex;
+      });
+      notes.forEach((note, index) => {
+        note.hidden = index !== currentIndex;
+      });
+      videos.forEach((video) => {
+        if (video.closest<HTMLElement>("[data-deck-slide]")?.hidden) {
+          video.pause();
+        }
+      });
+      thumbnails.forEach((thumbnail, index) => {
+        if (index === currentIndex) {
+          thumbnail.setAttribute("aria-current", "true");
+        } else {
+          thumbnail.removeAttribute("aria-current");
+        }
+      });
+
+      previousButton.disabled = currentIndex === 0;
+      nextButton.disabled = currentIndex === slides.length - 1;
+      counter.value = `${currentIndex + 1} / ${slides.length}`;
+      thumbnails[currentIndex]?.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    };
+
+    previousButton.addEventListener("click", () => showSlide(currentIndex - 1));
+    nextButton.addEventListener("click", () => showSlide(currentIndex + 1));
+    thumbnails.forEach((thumbnail) => {
+      thumbnail.addEventListener("click", () => {
+        const target = Number(thumbnail.dataset.deckTarget);
+        if (Number.isInteger(target)) {
+          showSlide(target);
+        }
+      });
+    });
+
+    viewport.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLMediaElement) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showSlide(currentIndex - 1);
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showSlide(currentIndex + 1);
+      }
+    });
+
+    viewport.addEventListener(
+      "touchstart",
+      (event: TouchEvent) => {
+        if (event.target instanceof HTMLMediaElement) {
+          touchStartX = null;
+          return;
+        }
+        touchStartX = event.changedTouches[0]?.clientX ?? null;
+      },
+      { passive: true },
+    );
+    viewport.addEventListener(
+      "touchend",
+      (event: TouchEvent) => {
+        const touchEndX = event.changedTouches[0]?.clientX;
+        if (touchStartX === null || touchEndX === undefined) {
+          return;
+        }
+        const distance = touchEndX - touchStartX;
+        if (Math.abs(distance) >= 50) {
+          showSlide(currentIndex + (distance < 0 ? 1 : -1));
+        }
+        touchStartX = null;
+      },
+      { passive: true },
+    );
+
+    if (!document.fullscreenEnabled || !stage || !fullscreenButton) {
+      fullscreenButton?.setAttribute("hidden", "");
+      return;
+    }
+    fullscreenButton.addEventListener("click", async () => {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await stage.requestFullscreen();
+      }
+    });
+  };
+
+  document
+    .querySelectorAll<HTMLElement>("[data-annotated-deck]")
+    .forEach(initializeDeck);
+</script>
+
+<style>
+  .annotated-deck {
+    margin: 0 0 4rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .deck-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.42fr);
+    gap: 2rem;
+    align-items: end;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .deck-header h2 {
+    margin: 0.25rem 0 0.45rem;
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+  }
+
+  .deck-header p {
+    margin-bottom: 0;
+  }
+
+  .deck-eyebrow,
+  .deck-draft-note,
+  .deck-note-meta,
+  .deck-controls,
+  .deck-thumbnail span {
+    font-family: var(--mono);
+  }
+
+  .deck-eyebrow {
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+
+  .deck-draft-note {
+    padding-left: 1rem;
+    border-left: 3px solid var(--border-strong);
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+
+  .deck-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.78fr);
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .deck-visual-column {
+    min-width: 0;
+  }
+
+  .deck-viewport {
+    display: grid;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid #222;
+    border-radius: 4px;
+    outline-offset: 4px;
+    background: #111;
+  }
+
+  .deck-slide {
+    grid-area: 1 / 1;
+    margin: 0;
+  }
+
+  .deck-slide,
+  .deck-slide img,
+  .deck-slide video {
+    width: 100%;
+    height: 100%;
+  }
+
+  .deck-slide img,
+  .deck-slide video {
+    display: block;
+    object-fit: contain;
+  }
+
+  .deck-slide video {
+    background: #000;
+  }
+
+  .deck-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .deck-controls button,
+  .deck-thumbnail {
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .deck-controls button {
+    min-height: 36px;
+    padding: 0.45rem 0.7rem;
+  }
+
+  .deck-controls button:hover:not(:disabled),
+  .deck-thumbnail:hover {
+    border-color: var(--link);
+    color: var(--link);
+  }
+
+  .deck-controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .deck-controls output {
+    min-width: 4.5rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .fullscreen-button {
+    margin-left: auto;
+  }
+
+  .deck-notes {
+    min-width: 0;
+    padding: 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface-warm);
+  }
+
+  .deck-note-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+  }
+
+  .deck-kind {
+    padding: 0.14rem 0.42rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: #fff;
+  }
+
+  .kind-実測 {
+    border-color: rgba(47, 133, 90, 0.4);
+    color: var(--success);
+  }
+
+  .kind-合成データ,
+  .kind-制約 {
+    border-color: rgba(161, 98, 7, 0.4);
+    color: var(--warning);
+  }
+
+  .deck-note h3 {
+    margin: 0.8rem 0;
+    font-size: 1.15rem;
+  }
+
+  .deck-note-script p {
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+
+  .deck-note-script {
+    margin: 0 0 1rem;
+  }
+
+  .deck-note-script p {
+    margin: 0;
+  }
+
+  .deck-note-script p + p {
+    margin-top: 0.85rem;
+  }
+
+  .deck-note-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1rem;
+  }
+
+  .deck-note-links a {
+    font-size: 0.82rem;
+  }
+
+  .deck-thumbnails {
+    display: flex;
+    gap: 0.65rem;
+    overflow-x: auto;
+    margin-top: 1rem;
+    padding: 0.2rem 0 0.65rem;
+    scrollbar-width: thin;
+  }
+
+  .deck-thumbnail {
+    position: relative;
+    flex: 0 0 128px;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .deck-thumbnail[aria-current="true"] {
+    border-color: var(--link);
+    box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.18);
+  }
+
+  .deck-thumbnail img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .deck-thumbnail span {
+    position: absolute;
+    right: 0.25rem;
+    bottom: 0.2rem;
+    padding: 0.08rem 0.3rem;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.76);
+    color: #fff;
+    font-size: 0.68rem;
+  }
+
+  .deck-stage:fullscreen {
+    overflow: auto;
+    padding: 1.25rem;
+    background: #fefefe;
+  }
+
+  @media (max-width: 900px) {
+    .deck-header,
+    .deck-stage {
+      grid-template-columns: 1fr;
+    }
+
+    .deck-header {
+      gap: 1rem;
+    }
+
+    .deck-draft-note {
+      padding: 0.7rem 0 0;
+      border-top: 1px solid var(--border);
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .annotated-deck {
+      margin-right: -16px;
+      margin-left: -16px;
+      padding: 1rem 16px;
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
+    }
+
+    .deck-controls {
+      flex-wrap: wrap;
+    }
+
+    .fullscreen-button {
+      margin-left: 0;
+    }
+
+    .deck-thumbnail {
+      flex-basis: 104px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck-thumbnails {
+      scroll-behavior: auto;
+    }
+  }
+</style>
